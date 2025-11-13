@@ -27,11 +27,8 @@ pipeline {
             }
             post {
                 always {
-                    junit allowEmptyResults: true, testResults: 'target/surefire-reports/*.xml'
+                    junit testResults: 'target/surefire-reports/*.xml', allowEmptyResults: true, testDataPublishers: [junitFlakyTestPublisher()]
                     archiveArtifacts artifacts: 'target/cucumber/**/*.json, target/cucumber/**/*.xml', allowEmptyArchive: true
-                    // Flaky Test Handler plugin: parse JUnit XML and mark tests that pass on rerun as flaky
-                    // Requires plugin: https://plugins.jenkins.io/flaky-test-handler/
-                    flakyTestIncludePattern(testResultsPattern: 'target/surefire-reports/*.xml')
                 }
             }
         }
