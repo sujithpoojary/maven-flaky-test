@@ -20,7 +20,7 @@ pipeline {
     }
     stage('Test') {
       steps {
-        sh 'mvn -B -e clean test -Dcucumber.features=classpath:com/example/calculator -Dcucumber.glue=com.example.calculator'
+        sh 'mvn clean install'
       }
       post {
         always {
