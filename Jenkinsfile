@@ -4,16 +4,14 @@ pipeline {
     timestamps()
     ansiColor('xterm')
   }
+  tools {
+    maven 'maven'
+  }
   environment {
     JAVA_HOME = tool name: 'jdk17', type: 'jdk'
     PATH = "${JAVA_HOME}/bin:${env.PATH}"
   }
   stages {
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
-    }
     stage('Setup') {
       steps {
         sh 'java -version'
