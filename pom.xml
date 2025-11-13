@@ -74,6 +74,12 @@
                 <version>3.2.5</version>
                 <configuration>
                     <useModulePath>false</useModulePath>
+                    <!-- Rerun failing tests to help distinguish true failures vs flakiness -->
+                    <rerunFailingTestsCount>2</rerunFailingTestsCount>
+                    <!-- Pass environment flag into tests (set env FLAKY_DEMO=true to activate demo flaky test) -->
+                    <systemPropertyVariables>
+                        <enable.flaky.demo>${env.FLAKY_DEMO}</enable.flaky.demo>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>
