@@ -20,7 +20,10 @@ pipeline {
     }
     stage('Test') {
       steps {
-        sh 'mvn -B -e clean test'
+        sh 'mvn -B -e clean test
+-Dcucumber.features=classpath:com/example/calculator
+-Dcucumber.glue=com.example.calculator
+-Dcucumber.plugin="pretty,summary,json:target/cucumber/cucumber.json,junit:target/cucumber/cucumber.xml"'
       }
       post {
         always {
