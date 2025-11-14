@@ -10,8 +10,6 @@ pipeline {
     environment {
         JAVA_HOME = tool name: 'jdk17', type: 'jdk'
         PATH = "${JAVA_HOME}/bin:${env.PATH}"
-        // Set to true to activate demo flaky tests (can also be overridden in Jenkins job configuration)
-        FLAKY_DEMO = 'true'
     }
     stages {
         stage('Setup') {
