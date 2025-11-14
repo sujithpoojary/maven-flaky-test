@@ -23,7 +23,7 @@ pipeline {
         stage('Test') {
             steps {
                 // Run tests; Surefire reruns failing tests 2 times to help identify flakes
-                sh 'mvn -B clean test'
+                sh 'mvn clean install'
             }
             post {
                 always {
