@@ -10,7 +10,7 @@ class MainDisabledFlakyIT {
     @AfterEach void tearDown(){ System.setOut(originalOut); System.setErr(originalErr); }
     private String out(){ return outContent.toString(); } private String err(){ return errContent.toString(); }
 
-    @Disabled("Intentionally flaky: relies on timing and random sleep")
+    //@Disabled("Intentionally flaky: relies on timing and random sleep")
     @Test void flakyRandomSleepTest() throws Exception {
         // Flaky: Uses current timestamp to determine pass/fail - fails roughly 40% of the time
         long nanos = System.nanoTime();
@@ -21,7 +21,7 @@ class MainDisabledFlakyIT {
         assertThat(nanos % 10).as("Flaky assertion based on nanoTime last digit").isLessThan(6);
     }
 
-    @Disabled("Intentionally flaky: arbitrary nanoTime comparison")
+    //@Disabled("Intentionally flaky: arbitrary nanoTime comparison")
     @Test void flakyTimingDependentTest() {
         // Flaky: Succeeds/fails based on whether current millisecond is even or odd
         long currentMillis = System.currentTimeMillis();
@@ -31,7 +31,7 @@ class MainDisabledFlakyIT {
         assertThat(currentMillis % 2).as("Flaky: fails when millisecond is odd").isEqualTo(0);
     }
 
-    @Disabled("Intentionally flaky: hashCode-based randomness")
+    //@Disabled("Intentionally flaky: hashCode-based randomness")
     @Test void flakyHashCodeTest() throws Exception {
         // Flaky: Fails based on Object hashCode which varies between JVM runs
         Object randomObject = new Object();
@@ -42,7 +42,7 @@ class MainDisabledFlakyIT {
         assertThat(hash % 3).as("Flaky: fails when hashCode divisible by 3").isNotEqualTo(0);
     }
 
-    @Disabled("Intentionally flaky: thread scheduling dependent")
+    //@Disabled("Intentionally flaky: thread scheduling dependent")
     @Test void flakyThreadRaceTest() throws Exception {
         // Flaky: Race condition between two threads
         final int[] counter = {0};
