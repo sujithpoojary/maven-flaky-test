@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.*;
 class CalculatorDisabledFlakyTest {
     private final Calculator calculator = new Calculator();
 
-    //@Disabled("Intentionally flaky: relies on timing and random sleep")
+    @Disabled("Intentionally flaky: relies on timing and random sleep")
     @Test void flakyAdditionTimingTest() throws Exception {
         // Flaky: Uses current timestamp to determine pass/fail - fails roughly 40% of the time
         long nanos = System.nanoTime();
@@ -30,7 +30,7 @@ class CalculatorDisabledFlakyTest {
         assertThat(nanos % 10).as("Flaky assertion based on nanoTime last digit").isLessThan(6);
     }
 
-    //@Disabled("Intentionally flaky: millisecond-based randomness")
+    @Disabled("Intentionally flaky: millisecond-based randomness")
     @Test void flakySubtractionMillisTest() {
         // Flaky: Succeeds/fails based on whether current millisecond is even or odd
         long currentMillis = System.currentTimeMillis();
@@ -42,7 +42,7 @@ class CalculatorDisabledFlakyTest {
         assertThat(currentMillis % 2).as("Flaky: fails when millisecond is odd").isEqualTo(0);
     }
 
-    //@Disabled("Intentionally flaky: hashCode-based randomness")
+    @Disabled("Intentionally flaky: hashCode-based randomness")
     @Test void flakyMultiplicationHashCodeTest() {
         // Flaky: Fails based on Object hashCode which varies between JVM runs
         Object randomObject = new Object();
@@ -55,7 +55,7 @@ class CalculatorDisabledFlakyTest {
         assertThat(hash % 3).as("Flaky: fails when hashCode divisible by 3").isNotEqualTo(0);
     }
 
-    //@Disabled("Intentionally flaky: thread scheduling dependent")
+    @Disabled("Intentionally flaky: thread scheduling dependent")
     @Test void flakyDivisionThreadRaceTest() throws Exception {
         // Flaky: Race condition between two threads
         final int[] counter = {0};
@@ -78,7 +78,7 @@ class CalculatorDisabledFlakyTest {
         assertThat(counter[0]).as("Flaky: race condition on counter").isEqualTo(2);
     }
 
-    //@Disabled("Intentionally flaky: based on nanoTime modulo")
+    @Disabled("Intentionally flaky: based on nanoTime modulo")
     @Test void flakyCalculationNanoModTest() {
         // Flaky: Fails based on nanoTime % 7
         long nanos = System.nanoTime();
@@ -93,7 +93,7 @@ class CalculatorDisabledFlakyTest {
         assertThat(nanos % 7).as("Flaky: fails when nanos divisible by 7").isNotEqualTo(0);
     }
 
-    //@Disabled("Intentionally flaky: thread interleaving")
+    @Disabled("Intentionally flaky: thread interleaving")
     @Test void flakyConcurrentCalculationsTest() throws Exception {
         // Flaky: Multiple threads with timing-dependent assertions
         ExecutorService executor = Executors.newFixedThreadPool(2);
@@ -122,7 +122,7 @@ class CalculatorDisabledFlakyTest {
         executor.shutdownNow();
     }
 
-    //@Disabled("Intentionally flaky: system time-based")
+    @Disabled("Intentionally flaky: system time-based")
     @Test void flakySystemTimeBasedTest() {
         // Flaky: Based on current second value
         long currentSeconds = System.currentTimeMillis() / 1000;
@@ -134,7 +134,7 @@ class CalculatorDisabledFlakyTest {
         assertThat(currentSeconds % 5).as("Flaky: fails when second divisible by 5").isNotEqualTo(0);
     }
 
-    //@Disabled("Intentionally flaky: Object identity hashCode")
+    @Disabled("Intentionally flaky: Object identity hashCode")
     @Test void flakyObjectIdentityTest() {
         // Flaky: Based on System.identityHashCode
         Object obj1 = new Object();
@@ -148,7 +148,7 @@ class CalculatorDisabledFlakyTest {
         assertThat(identity % 2).as("Flaky: fails when combined identity hash is even").isNotEqualTo(0);
     }
 
-    //@Disabled("Intentionally flaky: GC-dependent timing")
+    @Disabled("Intentionally flaky: GC-dependent timing")
     @Test void flakyMemoryDependentTest() throws Exception {
         // Flaky: May behave differently based on GC activity
         long startTime = System.nanoTime();
@@ -168,7 +168,7 @@ class CalculatorDisabledFlakyTest {
             .isLessThan(1_000_000); // 1ms - may fail on slow/busy systems
     }
 
-    //@Disabled("Intentionally flaky: random thread sleep variation")
+    @Disabled("Intentionally flaky: random thread sleep variation")
     @Test void flakyRandomSleepVariationTest() throws Exception {
         // Flaky: Based on nanoTime-derived sleep duration
         long nanos = System.nanoTime();
