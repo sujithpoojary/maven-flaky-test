@@ -21,7 +21,7 @@ pipeline {
         stage('Test') {
             steps {
                 // Run tests; Surefire reruns failing tests 2 times to help identify flakes
-                sh 'mvn clean install -DskipITs -Dsurefire.rerunFailingTestsCount=5'
+                sh 'mvn clean install -DskipITs -Dfailsafe.rerunFailingTestsCount=5'
             }
             post {
                 always {
