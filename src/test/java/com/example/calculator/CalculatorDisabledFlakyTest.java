@@ -30,7 +30,7 @@ class CalculatorDisabledFlakyTest {
         assertThat(nanos % 10).as("Flaky assertion based on nanoTime last digit").isLessThan(6);
     }
 
-    @Disabled("Intentionally flaky: millisecond-based randomness")
+    //@Disabled("Intentionally flaky: millisecond-based randomness")
     @Test void flakySubtractionMillisTest() {
         // Flaky: Succeeds/fails based on whether current millisecond is even or odd
         long currentMillis = System.currentTimeMillis();
@@ -42,7 +42,7 @@ class CalculatorDisabledFlakyTest {
         assertThat(currentMillis % 2).as("Flaky: fails when millisecond is odd").isEqualTo(0);
     }
 
-    @Disabled("Intentionally flaky: hashCode-based randomness")
+    //@Disabled("Intentionally flaky: hashCode-based randomness")
     @Test void flakyMultiplicationHashCodeTest() {
         // Flaky: Fails based on Object hashCode which varies between JVM runs
         Object randomObject = new Object();
