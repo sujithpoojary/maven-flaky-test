@@ -4,8 +4,8 @@ pipeline {
   tools { maven 'maven' }
 
   parameters {
-    string(name: 'test', defaultValue: '', description: 'Optional Surefire test selector (e.g. MyTest#method or com.foo.*)')
-    string(name: 'RETRY_COUNT', defaultValue: '2', description: 'Number of times to retry failed tests')
+    string(name: 'test', defaultValue: '', description: 'Optional Surefire selector (e.g. MyTest#method or com.foo.*)')
+    string(name: 'RETRY_COUNT', defaultValue: '2', description: 'Number of selective rerun attempts')
   }
 
   environment {
@@ -28,32 +28,34 @@ pipeline {
           String baseFlags = params.test?.trim() ? "-Dtest='${params.test.trim()}'" : ""
           boolean passed = false
 
-          // 1) Initial full run
-          echo "Attempt #1: full suite"
+          // 1) Initial full run (discover failures)
+          echo "🧪 Attempt #1: full suite"
           int rc = sh(script: "mvn -B clean test ${baseFlags}", returnStatus: true)
-          junit testResults: 'target/surefire-reports/*.xml', allowEmptyResults: true, testDataPublishers: [junitFlakyTestPublisher()]
+          junit testResults: 'target/surefire-reports/*.xml',
+                allowEmptyResults: true,
+                testDataPublishers: [junitFlakyTestPublisher()]
           if (rc == 0) { passed = true }
 
-          // helper to collect failed tests (pure shell; sandbox-safe)
+          // Helper: collect failed tests as Class#method (Perl-based, sandbox-safe)
           def collectFailedSelectors = {
             String out = sh(
               script: '''
                 set -eu
-                out="target/surefire-reports/.failed-selectors.txt"
-                : > "$out"
-                # For each report, chunk by </testcase> and pick those containing <failure> or <error>
+                tmp="target/surefire-reports/.failed-selectors.txt"
+                : > "$tmp"
                 for f in target/surefire-reports/TEST-*.xml; do
                   [ -f "$f" ] || continue
-                  awk -v RS="</testcase>" '
-                    match($0, /<testcase [^>]*classname="([^"]+)"[^>]*name="([^"]+)"/, a) {
-                      if ($0 ~ /<failure/ || $0 ~ /<error/) {
-                        print a[1] "#" a[2]
-                      }
+                  perl -0777 -ne '\''
+                    while (m{<testcase\\b([^>]*)>.*?(?:<failure\\b|<error\\b).*?</testcase>}sg) {
+                      my $a = $1;
+                      my ($c) = $a =~ /classname="([^"]+)"/;
+                      my ($n) = $a =~ /name="([^"]+)"/;
+                      if (defined $c && defined $n) { print "$c#$n\\n" }
                     }
-                  ' "$f" >> "$out"
+                  '\'' "$f" >> "$tmp"
                 done
-                if [ -s "$out" ]; then
-                  sort -u "$out"
+                if [ -s "$tmp" ]; then
+                  sort -u "$tmp"
                 fi
               ''',
               returnStdout: true
@@ -66,17 +68,18 @@ pipeline {
           while (!passed && attempt <= maxRetries + 1) {
             def failedSelectors = collectFailedSelectors()
             if (!failedSelectors || failedSelectors.isEmpty()) {
-              echo "No failed tests found to rerun."
+              echo "✅ No failed tests found to rerun."
               passed = true
               break
             }
 
-            // Build -Dtest: ClassA#method1,ClassB#method2
             String selectorArg = "-Dtest='" + failedSelectors.join(",") + "'"
-            echo "Attempt #${attempt}: rerunning failed tests only (${failedSelectors.size()} selectors)"
-            // IMPORTANT: no 'clean' here
+            echo "🧪 Attempt #${attempt}: rerunning failed tests only (${failedSelectors.size()} selectors)"
+            // IMPORTANT: no 'clean' here — keep reports for parsing
             rc = sh(script: "mvn -B test ${selectorArg}", returnStatus: true)
-            junit testResults: 'target/surefire-reports/*.xml', allowEmptyResults: true, testDataPublishers: [junitFlakyTestPublisher()]
+            junit testResults: 'target/surefire-reports/*.xml',
+                  allowEmptyResults: true,
+                  testDataPublishers: [junitFlakyTestPublisher()]
             if (rc == 0) {
               passed = true
               break
@@ -85,13 +88,14 @@ pipeline {
           }
 
           if (!passed) {
-            error("Tests failed after ${maxRetries + 1} attempts (including selective reruns).")
+            error("❌ Tests failed after ${maxRetries + 1} attempts (including selective reruns).")
           }
         }
       }
       post {
         always {
-          archiveArtifacts artifacts: 'target/cucumber/**/*.json, target/cucumber/**/*.xml', allowEmptyArchive: true
+          archiveArtifacts artifacts: 'target/cucumber/**/*.json, target/cucumber/**/*.xml',
+                            allowEmptyArchive: true
         }
       }
     }
