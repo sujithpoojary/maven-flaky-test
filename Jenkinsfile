@@ -39,26 +39,26 @@ pipeline {
           junit testResults: 'target/surefire-reports/*.xml', allowEmptyResults: true, testDataPublishers: [junitFlakyTestPublisher()]
           if (rc == 0) { passed = true }
 
-          // helper to collect failed tests as Class#method selectors (sandbox-safe)
+          // helper to collect failed tests as Class#method selectors (sandbox-safe, no '**')
           def collectFailedSelectors = {
             def selectors = []
-            // List report files (handle none gracefully)
             def listOut = sh(script: "ls target/surefire-reports/TEST-*.xml 2>/dev/null || true", returnStdout: true).trim()
             def reportFiles = listOut ? listOut.split("\\s+").findAll { it } : []
-
+          
             for (f in reportFiles) {
               def xml = readFile(file: f)
-              def root = new XmlParser(false, false).parseText(xml) // no validation, no namespace
-              // find all <testcase ...> nodes
-              root.'**'.findAll { it.name() == 'testcase' }.each { tc ->
-                // attributes read via map to please the sandbox
-                def attrs = tc.attributes() as Map
-                boolean hasFailure = (tc.'failure'.size() > 0) || (tc.'error'.size() > 0)
-                if (hasFailure) {
-                  String cls = (attrs.get('classname') ?: '').toString()
-                  String mtd = (attrs.get('name') ?: '').toString()
-                  if (cls && mtd) {
-                    selectors << "${cls}#${mtd}"
+              def root = new XmlParser(false, false).parseText(xml) // no validation, no ns
+          
+              // Surefire files have <testsuite> as root; get its testcases
+              def suites = (root.name() == 'testsuite') ? [root] : root.'testsuite'
+              suites.each { suite ->
+                suite.'testcase'.each { tc ->
+                  Map attrs = (tc.attributes() as Map)
+                  boolean hasFailure = (tc.'failure'.size() > 0) || (tc.'error'.size() > 0)
+                  if (hasFailure) {
+                    String cls = (attrs.get('classname') ?: '').toString()
+                    String mtd = (attrs.get('name') ?: '').toString()
+                    if (cls && mtd) selectors << "${cls}#${mtd}"
                   }
                 }
               }
