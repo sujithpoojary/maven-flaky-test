@@ -96,4 +96,3 @@ pipeline {
         archiveArtifacts artifacts: 'target/cucumber/**/*.json, target/cucumber/**/*.xml', allowEmptyArchive: true
       }
     }
-  }
